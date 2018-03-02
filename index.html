@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>微信网页版</title> 
+	<!-- <script type="text/javascript" src='./lib/angular-1.0.1.min.js'></script> -->
+	<link rel="shortcut icon" href="./img/wechat.ico">
+	<link rel="stylesheet" type="text/css" href="./css/font-awesome.css">
+	<link rel="stylesheet" type="text/css" href="./css/base.css">
+	<link rel="stylesheet" type="text/css" href="./css/app.css">
+	<script type="text/javascript" src='./lib/angular.min.js'></script>
+	<script type="text/javascript" src='./lib/ui-router.min.js'></script> 
+</head>
+<body ng-app='myapp' ng-controller='rootController'>
+ 
+<!-- <div ng-init="x = 5"  >sasdasd 超级测试</div>{{x}} -->
+<div ui-view class="content-container">
+<p>数据加载中...</p>
+</div>
+
+ <!--  <a href="" ui-sref="main">main</a>
+ <a href="#/main2" ui-sref="main.nihao" >main2</a>
+ <div ng-click='gomain3()'>my try</div> -->
+
+
+
+
+<!-- 登录页面框 -->
+<script type="text/ng-template" id='login.html'>
+	<div class="login-box" ng-controller='loginController'>
+		<img src="./img/mywife.png"  class="head-img" />
+		<div class="input-group"> 
+			<div class="input-item">
+				<i class="icon-user icon-color"></i>
+				<input type="text" name="account" class="form-control" placeholder="account"
+				ng-model='account'>
+			</div>
+			<div class="input-item">
+				<i class="icon-lock icon-color"></i>
+				<input type="password" name="password" class="form-control" placeholder="password"
+				ng-model='password'>
+			</div>
+		</div>
+		<div class="input-group">
+			<div class="checkbox-container">
+				<input type="checkbox" name="momerize" id='momerize' class="checkbox-control"><label for='momerize' class="checkbox-tips">记住密码</label>
+			</div>
+		</div>
+		<div class="input-group">
+			<button class="submit-button" ng-click='confirmToSubmit()'>确认登录</button>
+		</div>
+	</div>
+</script>
+
+<!-- 微信框 -->
+<script type="text/ng-template" id='wechat.html'>
+<div class="chat-container">
+	<div class="sibebar-lef">
+		<div class="user-infor"> 
+			<img src="./img/header.jpg" class='user-header'><span class="user-name" ng-bind='myNickname'>Mr.培森</span>
+			<i class="toggle-btn" ng-click='toggleInforBox()'></i>
+		</div>
+		<div class="input-box">
+			<i class="search-logo"></i>
+			<input type="text" name="search" placeholder="搜索" class="search-input">
+		</div>
+		<div class="input-box-tip">
+			<div class="logo-box">
+				<div class="logo-item logo-item-tip">
+					<i class="chat-logo logo {{chathover}}" ng-click="changePage()"></i>
+				</div>
+				<div class="logo-item">
+					<i class="list-logo logo {{listhover}}" ng-click="changePage2()"></i>
+				</div>
+			</div>
+		</div>
+
+		<!-- 在这里控制div的show hide即可 -->
+		<div view='wechat.friendlist' class="friendlist-container">
+
+			<!-- 最近联系人好友列表 -->
+			<div class="friendlist-container" ng-controller='recentlyTalking' ng-show='showMe'> 
+				<talkinglist ng-repeat='friend in friends' username='{{friend.nickname}}' usernumber='{{friend.id}}' talktime='{{friend.talktime}}' talkcontent='{{friend.talkcontent}}'></talkinglist>
+			</div>
+
+			<!-- 好友列表框 -->
+			<div class="friendlist-container" ng-controller='friendlist' ng-show='!showMe'> 
+				<friendlist-item ng-repeat='friend in friends' usernumber='{{friend.id}}' username='{{friend.nickname}}'></friendlist-item>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="sidebar-right">
+
+		<!-- 在这里控制div的show hide -->
+		<div view='wechat.friendinfor' class="friendinfor-container">
+			
+			<!-- 空白信息展示页面 -->
+			<div ng-show='showWhitePage'>
+				<p class="white-page-tip"></p>
+				<i class="white-page-logo"></i>
+				<p class="white-page-tips">未选择聊天</p>
+			</div>
+
+			<!-- 好友对话框界面 -->
+			<div ng-show='showTalkingBox' ng-controller='talkingBox'>
+				<p class="talking-tip" ng-bind='nickname'>好友昵称</p>
+				<div class="talking-records" id='talking-records'>
+					<talking-records ng-repeat='record in records' receiver='{{record.receiver}}' sender='{{record.sender}}' talkrecord='{{record.content}}'></talking-records>
+					<!-- <div class="talking-records-item other-item">
+						<img src="./img/mywife.png" class="talking-sm-head son-item">
+						<div class="talking-content-detail son-item">asdasd</div>
+					</div> -->
+				</div>
+				<div>
+					<div class="function-box">
+						<i class="emoji-logo logo-tips"></i>
+						<i class="jian-logo logo-tips"></i>
+						<i class="file-logo logo-tips"></i>
+					</div>
+					<div>
+						<textarea class="talking-content" ng-model='message' ng-keypress='keyDownToSendMessage($event)'></textarea>
+						<div class="bottom">
+							<button class="send-content" ng-click='sendNewMessage()'>发送</button>
+							<span class="talking-tips">按下Ctrl+Enter换行</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 好友信息查看界面 -->
+			<div class="friendinfor-container" ng-controller='friendinfor' ng-show='showFriendInfor'>
+				<p class="fr-title">
+					详细信息
+				</p>
+				<div class="fr-infor">
+					<img src="./img/mywife.png" class="fr-userhead">
+					<div class="fr-detail" ng-show='beChecked'> 
+						<p class="fr-username" ng-bind='username'>哈密瓜</p>
+						<p class="fr-introduction fr-text"><span ng-bind='introduction'></span></p>
+						<div class="text-box"> 
+							<p class="fr-text2">邮箱：<span ng-bind='email'></span></p>
+							<p class="fr-text2">地址：<span ng-bind='address'></span></p>
+							<p class="fr-text2">年龄：<span ng-bind='age'></span></p>
+						</div>
+						<button class="fr-talking" ng-click='sendMessage()'>发消息</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="personal-inforbox" ng-controller='inforboxController' ng-show='showInforBox'>
+		<div class="closebox">
+			<button class="submit-button special-close" ng-click='closeInforbox()'>关闭</button>
+		</div>
+		<p class="inforbox-title">个人信息修改</p>
+		<p class="inforbox-label">昵称<span class="special-red">*</span>：</p>
+		<input type="text" name="nickname" class="form-control special-input" placeholder="请输入昵称" 
+		ng-model='nickname' >
+		<p class="inforbox-label">年龄<span class="special-red">*</span>：</p>
+		<input type="text" name="age" class="form-control special-input" placeholder="请输入年龄"
+		ng-model='age'>
+		<p class="inforbox-label">邮箱<span class="special-red">*</span>：</p>
+		<input type="text" name="mailbox" class="form-control special-input" placeholder="请输入邮箱"
+		ng-model='mailbox'>
+		<p class="inforbox-label">地址<span class="special-red">*</span>：</p>
+		<input type="text" name="address" class="form-control special-input" placeholder="请输入地址"
+		ng-model='address'>
+		<p class="inforbox-label">个人介绍<span class="special-red">*</span>：</p>
+		<input type="text" name="introduction" class="form-control special-input" placeholder="请输入个人介绍"
+		ng-model='introduction'>
+		<button class="submit-button special-button" ng-click='confirmToUpdate()'>确认提交</button>
+	</div>
+</div>
+</script>
+
+<!-- 好友列表框 -->
+<!-- <script type="text/ng-template" id='friendlist.html'>
+	<div class="friendlist-container" ng-controller='friendlist'> 
+		<friendlist-item ng-repeat='friend in friends' usernumber='{{friend.id}}' username='{{friend.nickname}}'></friendlist-item>
+	</div>
+</script> -->
+
+<!-- 好友信息查看界面 -->
+<!-- <script type="text/ng-template" id='friendinfor.html'>
+<div class="friendinfor-container" ng-controller='friendinfor'>
+	<p class="fr-title">
+		详细信息
+	</p>
+	<div class="fr-infor">
+		<img src="./img/mywife.png" class="fr-userhead">
+		<div class="fr-detail" ng-show='beChecked'> 
+			<p class="fr-username" ng-bind='username'>哈密瓜</p>
+			<p class="fr-introduction fr-text"><span ng-bind='introduction'></span></p>
+			<div class="text-box"> 
+				<p class="fr-text2">邮箱：<span ng-bind='email'></span></p>
+				<p class="fr-text2">地址：<span ng-bind='address'></span></p>
+				<p class="fr-text2">年龄：<span ng-bind='age'></span></p>
+			</div>
+			<button class="fr-talking">发消息</button>
+		</div>
+	</div>
+</div>
+</script> -->
+
+<!-- 最近联系人好友列表 -->
+<!-- <script type="text/ng-template" id='recentlyTalking.html'>
+	<div class="friendlist-container" ng-controller='recentlyTalking'> 
+		<talkinglist ng-repeat='friend in friends' username='{{friend.nickname}}' usernumber='{{friend.id}}' talktime='{{friend.talktime}}' talkcontent='{{friend.talkcontent}}'></talkinglist>
+	</div>
+</script> -->
+
+<!--   <script type="text/ng-template" id='test3.html'>
+  <div>main2:{{title}}asdaasdasdasdasdasdasdasdasdsd</div>
+  	
+  </script> -->
+<script type="text/javascript" src='./js/app.js'></script>
+<script type="text/javascript" src='./js/controller.js'></script>
+<script type="text/javascript" src='./js/directive.js'></script>
+</body>
+</html>
